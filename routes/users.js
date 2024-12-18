@@ -1,4 +1,5 @@
 var express = require('express');
+var bcrypt = require('bcryptjs')
 var router = express.Router();
 const prisma = require('../lib/db');
 
@@ -30,8 +31,12 @@ router.post("/", async function (req, res, next) {
 
   
   try{
-    const user = await prisma.user.create({data : req.body})
+    let { password } = req.body
+    let salt = bcrypt.genSaltSync(10);
+    let hash = bcrypt.hashSync(password, salt);
 
+    req.body.password = hash
+    const user = await prisma.user.create({data : req.body})
     res.status(200).json({
       status: true,
       data: user
